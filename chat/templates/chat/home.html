@@ -1,0 +1,347 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+{% block title %}اتاق‌های چت | چت آنلاین{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: block !important;
+        align-items: initial !important;
+        justify-content: initial !important;
+        padding: 0 !important;
+        background: #f4f6fb !important;
+    }
+
+    /* ===== Navbar ===== */
+    .navbar-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 14px 24px;
+        box-shadow: 0 4px 20px rgba(108, 99, 255, 0.25);
+    }
+
+    .navbar-brand-custom {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .navbar-brand-custom .logo-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    .user-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        font-weight: 500;
+    }
+
+    .user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-logout {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        border-radius: 10px;
+        padding: 6px 14px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    /* ===== Main Container ===== */
+    .main-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+        background: #fff;
+        border-radius: 20px;
+        padding: 24px 28px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-header p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* ===== Create Room Form ===== */
+    .create-room-form {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .create-room-form .form-control {
+        border-radius: 12px;
+        padding: 12px 18px;
+        border: 2px solid #e9ecef;
+        font-size: 15px;
+        transition: all 0.2s;
+    }
+
+    .create-room-form .form-control:focus {
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 26px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 15px;
+        white-space: nowrap;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(108, 99, 255, 0.4);
+        color: #fff;
+    }
+
+    /* ===== Rooms Grid ===== */
+    .rooms-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .rooms-count {
+        background: #ede9fe;
+        color: #6c63ff;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .room-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        transition: all 0.25s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+
+    .room-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(108, 99, 255, 0.18);
+        border-color: #6c63ff;
+        color: inherit;
+    }
+
+    .room-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .room-info { flex: 1; min-width: 0; }
+
+    .room-name {
+        font-weight: 700;
+        color: #1a1a2e;
+        font-size: 16px;
+        margin: 0 0 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .room-meta {
+        color: #6c757d;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .room-arrow {
+        color: #c1c5d0;
+        font-size: 18px;
+        transition: color 0.2s, transform 0.2s;
+    }
+
+    .room-card:hover .room-arrow {
+        color: #6c63ff;
+        transform: translateX(-4px);
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+        background: #fff;
+        border-radius: 20px;
+        padding: 60px 20px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #c1c5d0;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h4 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin: 0;
+    }
+
+    @media (max-width: 576px) {
+        .create-room-form { flex-direction: column; }
+        .btn-create { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navbar -->
+<nav class="navbar-custom">
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="{% url 'home' %}" class="navbar-brand-custom text-decoration-none">
+            <div class="logo-circle"><i class="bi bi-chat-dots-fill"></i></div>
+            <span>چت آنلاین</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="user-badge">
+                <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+                <span class="d-none d-sm-inline">{{ request.user.username }}</span>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-logout text-decoration-none">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="d-none d-sm-inline">خروج</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main -->
+<div class="main-container">
+
+    <!-- Header + Create Room -->
+    <div class="page-header">
+        <h1><i class="bi bi-grid-3x3-gap-fill text-primary"></i> اتاق‌های چت</h1>
+        <p>یک اتاق جدید بسازید یا به اتاق‌های موجود بپیوندید</p>
+
+        <form method="POST" class="create-room-form">
+            {% csrf_token %}
+            <input type="text" name="room_name" class="form-control"
+                   placeholder="نام اتاق جدید..." required maxlength="50">
+            <button type="submit" class="btn btn-create">
+                <i class="bi bi-plus-lg me-1"></i>
+                ساخت اتاق
+            </button>
+        </form>
+    </div>
+
+    <!-- Rooms List -->
+    {% if rooms %}
+    <div class="rooms-title">
+        <i class="bi bi-chat-square-text-fill text-primary"></i>
+        <span>اتاق‌های موجود</span>
+        <span class="rooms-count">{{ rooms|length }}</span>
+    </div>
+
+    <div class="row g-3">
+        {% for room in rooms %}
+        <div class="col-md-6 col-lg-4">
+            <a href="{% url 'room' room_name=room.name %}" class="room-card">
+                <div class="room-icon">
+                    <i class="bi bi-hash"></i>
+                </div>
+                <div class="room-info">
+                    <h6 class="room-name">{{ room.name }}</h6>
+                    <span class="room-meta">
+                        <i class="bi bi-people-fill"></i>
+                        ورود به گفتگو
+                    </span>
+                </div>
+                <i class="bi bi-chevron-left room-arrow"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="bi bi-chat-square-dots"></i>
+        <h4>هنوز اتاقی ساخته نشده</h4>
+        <p>اولین نفری باشید که یک اتاق جدید می‌سازد!</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

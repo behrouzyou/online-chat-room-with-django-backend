@@ -1,0 +1,354 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+{% block title %}اتاق {{ room_name }} | چت آنلاین{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        display: block !important;
+        align-items: initial !important;
+        justify-content: initial !important;
+        padding: 0 !important;
+        background: #f4f6fb !important;
+        overflow: hidden;
+    }
+
+    /* ===== Room Layout ===== */
+    .room-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    /* ===== Room Header ===== */
+    .room-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 20px rgba(108, 99, 255, 0.25);
+        z-index: 10;
+        flex-shrink: 0;
+    }
+
+    .room-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+    }
+
+    .room-header-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        backdrop-filter: blur(10px);
+    }
+
+    .room-header-info h2 {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .room-header-info small {
+        font-size: 12px;
+        opacity: 0.85;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+    }
+
+    /* ===== Messages Area ===== */
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: #f4f6fb;
+        background-image:
+            radial-gradient(circle at 20% 30%, rgba(108, 99, 255, 0.04) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.04) 0%, transparent 40%);
+    }
+
+    .messages-area::-webkit-scrollbar { width: 6px; }
+    .messages-area::-webkit-scrollbar-track { background: transparent; }
+    .messages-area::-webkit-scrollbar-thumb {
+        background: #c1c5d0;
+        border-radius: 10px;
+    }
+    .messages-area::-webkit-scrollbar-thumb:hover { background: #a0a5b5; }
+
+    /* ===== Message Bubble ===== */
+    .message-row {
+        display: flex;
+        gap: 10px;
+        max-width: 75%;
+        animation: msgIn 0.3s ease;
+    }
+
+    @keyframes msgIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-row.own {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+
+    .message-row.other {
+        align-self: flex-start;
+    }
+
+    .msg-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: #fff;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .message-row.own .msg-avatar {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .msg-body { display: flex; flex-direction: column; gap: 4px; }
+
+    .msg-sender {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        padding: 0 4px;
+    }
+
+    .message-row.own .msg-sender { text-align: left; }
+
+    .msg-bubble {
+        padding: 10px 16px;
+        border-radius: 16px;
+        font-size: 15px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .message-row.other .msg-bubble {
+        background: #fff;
+        color: #1a1a2e;
+        border-top-right-radius: 4px;
+    }
+
+    .message-row.own .msg-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border-top-left-radius: 4px;
+    }
+
+    .msg-time {
+        font-size: 11px;
+        color: #adb5bd;
+        padding: 0 4px;
+    }
+
+    .message-row.own .msg-time { text-align: left; }
+
+    /* ===== Empty State ===== */
+    .chat-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        text-align: center;
+    }
+
+    .chat-empty i {
+        font-size: 72px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    .chat-empty p {
+        font-size: 15px;
+        margin: 0;
+    }
+
+    /* ===== Input Area ===== */
+    .input-area {
+        background: #fff;
+        border-top: 1px solid #e9ecef;
+        padding: 16px 20px;
+        flex-shrink: 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .input-wrapper {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .input-wrapper input {
+        flex: 1;
+        border-radius: 24px;
+        padding: 12px 20px;
+        border: 2px solid #e9ecef;
+        font-size: 15px;
+        transition: all 0.2s;
+        background: #f8f9fa;
+    }
+
+    .input-wrapper input:focus {
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.12);
+        background: #fff;
+        outline: none;
+    }
+
+    .btn-send {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+        flex-shrink: 0;
+    }
+
+    .btn-send:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-send:active { transform: scale(0.95); }
+
+    @media (max-width: 576px) {
+        .message-row { max-width: 85%; }
+        .msg-avatar { width: 34px; height: 34px; font-size: 13px; }
+        .messages-area { padding: 16px 12px; }
+        .input-area { padding: 12px; }
+        .room-header-info h2 { font-size: 15px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="room-wrapper">
+
+    <!-- Header -->
+    <div class="room-header">
+        <div class="room-header-info">
+            <div class="room-header-icon">
+                <i class="bi bi-hash"></i>
+            </div>
+            <div>
+                <h2>{{ room_name }}</h2>
+                <small>
+                    <i class="bi bi-circle-fill" style="font-size:8px;color:#4ade80;"></i>
+                    اتاق گفتگو
+                </small>
+            </div>
+        </div>
+        <a href="{% url 'home' %}" class="btn-back">
+            <i class="bi bi-arrow-right"></i>
+            <span class="d-none d-sm-inline">بازگشت</span>
+        </a>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+        {% if messages %}
+            {% for msg in messages %}
+                {% if msg.user == request.user %}
+                    <!-- پیام خودم -->
+                    <div class="message-row own">
+                        <div class="msg-avatar">{{ msg.user.username|first|upper }}</div>
+                        <div class="msg-body">
+                            <span class="msg-sender">شما</span>
+                            <div class="msg-bubble">{{ msg.content }}</div>
+                            <span class="msg-time">{{ msg.timestamp|date:"H:i" }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- پیام دیگران -->
+                    <div class="message-row other">
+                        <div class="msg-avatar">{{ msg.user.username|first|upper }}</div>
+                        <div class="msg-body">
+                            <span class="msg-sender">{{ msg.user.username }}</span>
+                            <div class="msg-bubble">{{ msg.content }}</div>
+                            <span class="msg-time">{{ msg.timestamp|date:"H:i" }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="chat-empty">
+                <i class="bi bi-chat-heart"></i>
+                <p>هنوز پیامی ارسال نشده. اولین پیام را بفرستید! 💬</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+        <form class="input-wrapper" method="POST" id="messageForm">
+            {% csrf_token %}
+            <input type="text" name="content" id="messageInput"
+                   placeholder="پیام خود را بنویسید..." autocomplete="off" required>
+            <button type="submit" class="btn-send" title="ارسال">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // اسکرول خودکار به آخرین پیام
+    const area = document.getElementById('messagesArea');
+    if (area) area.scrollTop = area.scrollHeight;
+
+    // فوکوس روی input
+    const input = document.getElementById('messageInput');
+    if (input) input.focus();
+</script>
+{% endblock %}

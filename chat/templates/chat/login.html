@@ -1,0 +1,51 @@
+{% extends 'chat/base.html' %}
+{% block title %}ورود | چت آنلاین{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-logo">
+        <i class="bi bi-chat-dots-fill"></i>
+    </div>
+    <h3 class="auth-title">خوش آمدید 👋</h3>
+    <p class="auth-subtitle">برای ادامه وارد حساب کاربری خود شوید</p>
+
+    {% if error %}
+    <div class="alert alert-danger alert-custom" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="username" class="form-label">نام کاربری</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="username" name="username"
+                       placeholder="نام کاربری خود را وارد کنید" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="password" class="form-label">رمز عبور</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="رمز عبور خود را وارد کنید" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-custom">
+            <i class="bi bi-box-arrow-in-left me-1"></i>
+            ورود به حساب
+        </button>
+
+        <div class="auth-footer">
+            حساب کاربری ندارید؟
+            <a href="{% url 'register' %}">ثبت‌نام کنید</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
